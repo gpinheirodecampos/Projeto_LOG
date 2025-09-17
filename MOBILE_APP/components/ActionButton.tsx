@@ -1,26 +1,25 @@
 import React from 'react';
 import { TouchableOpacity, Text, StyleSheet, View, ViewStyle, TextStyle } from 'react-native';
 import * as Haptics from 'expo-haptics';
+import { LucideIcon } from 'lucide-react-native';
 import { useTheme } from '@/contexts/ThemeContext';
 
 interface ActionButtonProps {
   title: string;
-  icon: string;
+  icon: LucideIcon;
   onPress: () => void;
-  variant?: 'primary' | 'success' | 'danger' | 'warning' | 'disabled';
+  variant?: 'default' | 'destructive' | 'secondary' | 'ghost' | 'outline';
   disabled?: boolean;
-  pulse?: boolean;
-  size?: 'normal' | 'large';
+  size?: 'default' | 'sm' | 'lg';
 }
 
 const ActionButton: React.FC<ActionButtonProps> = ({
   title,
-  icon,
+  icon: Icon,
   onPress,
-  variant = 'primary',
+  variant = 'default',
   disabled = false,
-  pulse = false,
-  size = 'normal',
+  size = 'default',
 }) => {
   const { theme } = useTheme();
 
@@ -32,44 +31,102 @@ const ActionButton: React.FC<ActionButtonProps> = ({
   };
 
   const getButtonStyle = (): ViewStyle => {
-    const baseStyle = size === 'large' ? styles.buttonLarge : styles.button;
+    const baseStyle = {
+      ...styles.button,
+      ...(size === 'lg' ? styles.buttonLg : {}),
+      ...(size === 'sm' ? styles.buttonSm : {}),
+    };
     
-    if (disabled || variant === 'disabled') {
+    if (disabled) {
       return { 
-        ...baseStyle, 
+        ...baseStyle,
         backgroundColor: theme.colors.disabled,
+        borderColor: theme.colors.border,
         opacity: 0.5,
       };
     }
 
     switch (variant) {
-      case 'success':
-        return { ...baseStyle, backgroundColor: theme.colors.success };
-      case 'danger':
-        return { ...baseStyle, backgroundColor: theme.colors.error };
-      case 'warning':
-        return { ...baseStyle, backgroundColor: theme.colors.warning };
-      case 'primary':
+      case 'destructive':
+        return { 
+          ...baseStyle, 
+          backgroundColor: theme.colors.error,
+          borderColor: theme.colors.error,
+        };
+      case 'secondary':
+        return { 
+          ...baseStyle, 
+          backgroundColor: theme.colors.card,
+          borderColor: theme.colors.border,
+        };
+      case 'ghost':
+        return { 
+          ...baseStyle, 
+          backgroundColor: 'transparent',
+          borderColor: 'transparent',
+          shadowOpacity: 0,
+          elevation: 0,
+        };
+      case 'outline':
+        return { 
+          ...baseStyle, 
+          backgroundColor: 'transparent',
+          borderColor: theme.colors.border,
+          borderWidth: 1,
+        };
+      case 'default':
       default:
-        return { ...baseStyle, backgroundColor: theme.colors.primary };
+        return { 
+          ...baseStyle, 
+          backgroundColor: theme.colors.primary,
+          borderColor: theme.colors.primary,
+        };
     }
   };
 
   const getTextStyle = (): TextStyle => {
-    return disabled || variant === 'disabled' 
-      ? { ...styles.text, color: theme.colors.textSecondary }
-      : styles.text;
+    const baseTextStyle = {
+      ...styles.text,
+      ...(size === 'lg' ? styles.textLg : {}),
+      ...(size === 'sm' ? styles.textSm : {}),
+    };
+
+    if (disabled) {
+      return { ...baseTextStyle, color: theme.colors.textSecondary };
+    }
+
+    switch (variant) {
+      case 'secondary':
+      case 'ghost':
+      case 'outline':
+        return { ...baseTextStyle, color: theme.colors.text };
+      default:
+        return { ...baseTextStyle, color: '#ffffff' };
+    }
+  };
+
+  const getIconColor = (): string => {
+    if (disabled) return theme.colors.textSecondary;
+    
+    switch (variant) {
+      case 'secondary':
+      case 'ghost': 
+      case 'outline':
+        return theme.colors.text;
+      default:
+        return '#ffffff';
+    }
   };
 
   return (
     <TouchableOpacity
-      style={[getButtonStyle(), pulse && styles.pulse]}
+      style={getButtonStyle()}
       onPress={handlePress}
       disabled={disabled}
-      activeOpacity={0.8}>
+      activeOpacity={0.7}>
       <View style={styles.content}>
-        <Text style={styles.icon}>{icon}</Text>
-        <Text style={[getTextStyle(), size === 'large' && styles.textLarge]}>{title}</Text>
+        <Icon size={size === 'sm' ? 16 : size === 'lg' ? 24 : 20} color={getIconColor()} />
+        <Text style={getTextStyle()}>{title}</Text>
       </View>
     </TouchableOpacity>
   );
@@ -77,47 +134,44 @@ const ActionButton: React.FC<ActionButtonProps> = ({
 
 const styles = StyleSheet.create({
   button: {
-    height: 72,
-    borderRadius: 12,
-    marginVertical: 8,
+    height: 56,
+    borderRadius: 8,
+    marginVertical: 4,
     marginHorizontal: 16,
-    elevation: 4,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
+    borderWidth: 1,
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 1,
   },
-  buttonLarge: {
-    height: 88,
-    borderRadius: 16,
-    marginVertical: 10,
-    marginHorizontal: 16,
-    elevation: 6,
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.3,
-    shadowRadius: 6,
+  buttonSm: {
+    height: 36,
+    paddingHorizontal: 12,
+  },
+  buttonLg: {
+    height: 64,
+    paddingHorizontal: 24,
   },
   content: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingHorizontal: 20,
-  },
-  icon: {
-    fontSize: 24,
-    marginRight: 12,
+    paddingHorizontal: 16,
+    gap: 8,
   },
   text: {
+    fontSize: 16,
+    fontWeight: '500',
+    lineHeight: 20,
+  },
+  textSm: {
+    fontSize: 14,
+    lineHeight: 16,
+  },
+  textLg: {
     fontSize: 18,
-    fontWeight: '600',
-    color: '#FFFFFF',
-  },
-  textLarge: {
-    fontSize: 20,
-    fontWeight: '700',
-  },
-  pulse: {
-    // Animation would be added with react-native-reanimated
+    lineHeight: 24,
   },
 });
 

@@ -64,26 +64,24 @@ export default function LoginScreen() {
 
   return (
     <KeyboardAvoidingView 
-      style={[styles.container, { backgroundColor: theme.colors.primary }]} 
+      style={[styles.container, { backgroundColor: theme.colors.background }]} 
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
       <View style={styles.content}>
         <View style={styles.header}>
-          <View style={[styles.logoContainer, { 
-            backgroundColor: theme.isDark ? '#1565C0' : '#1565C0' 
-          }]}>
-            <Truck size={48} color="#FFFFFF" />
+          <View style={[styles.logoContainer, { backgroundColor: theme.colors.primary }]}>
+            <Truck size={32} color="#FFFFFF" />
           </View>
-          <Text style={styles.title}>Diário de Bordo</Text>
-          <Text style={styles.subtitle}>Seu registro profissional</Text>
+          <Text style={[styles.title, { color: theme.colors.text }]}>Portal Admin</Text>
+          <Text style={[styles.subtitle, { color: theme.colors.textSecondary }]}>Diário de Bordo Digital</Text>
         </View>
 
         <View style={[styles.form, { 
           backgroundColor: theme.colors.card,
           shadowColor: theme.colors.shadow,
         }]}>
-          <View style={styles.inputContainer}>
-            <Phone size={20} color={theme.colors.primary} style={styles.inputIcon} />
+          <View style={[styles.inputContainer, { borderBottomColor: theme.colors.border }]}>
+            <Phone size={18} color={theme.colors.textSecondary} style={styles.inputIcon} />
             <TextInput
               style={[styles.input, { color: theme.colors.text }]}
               placeholder="Telefone"
@@ -95,8 +93,8 @@ export default function LoginScreen() {
             />
           </View>
 
-          <View style={styles.inputContainer}>
-            <Lock size={20} color={theme.colors.primary} style={styles.inputIcon} />
+          <View style={[styles.inputContainer, { borderBottomColor: theme.colors.border }]}>
+            <Lock size={18} color={theme.colors.textSecondary} style={styles.inputIcon} />
             <TextInput
               style={[styles.input, { color: theme.colors.text }]}
               placeholder="PIN (4-6 dígitos)"
@@ -112,15 +110,15 @@ export default function LoginScreen() {
           <TouchableOpacity
             style={[
               styles.loginButton, 
-              { backgroundColor: theme.colors.success },
+              { backgroundColor: theme.colors.primary },
               isLoading && { backgroundColor: theme.colors.disabled }
             ]}
             onPress={handleLogin}
             disabled={isLoading}
-            activeOpacity={0.8}
+            activeOpacity={0.7}
           >
             <Text style={styles.loginButtonText}>
-              {isLoading ? 'ENTRANDO...' : 'ENTRAR'}
+              {isLoading ? 'Entrando...' : 'Entrar no Sistema'}
             </Text>
           </TouchableOpacity>
 
@@ -132,9 +130,7 @@ export default function LoginScreen() {
         </View>
 
         <View style={styles.footer}>
-          <Text style={[styles.footerText, { 
-            color: theme.isDark ? '#E3F2FD' : '#E3F2FD' 
-          }]}>
+          <Text style={[styles.footerText, { color: theme.colors.textSecondary }]}>
             Para sua segurança, use apenas em{'\n'}dispositivos confiáveis
           </Text>
         </View>
@@ -157,37 +153,34 @@ const styles = StyleSheet.create({
     marginBottom: 48,
   },
   logoContainer: {
-    width: 96,
-    height: 96,
-    borderRadius: 48,
+    width: 64,
+    height: 64,
+    borderRadius: 12,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 24,
+    marginBottom: 16,
   },
   title: {
-    fontSize: 32,
+    fontSize: 24,
     fontWeight: '700',
-    color: '#FFFFFF',
-    marginBottom: 8,
+    marginBottom: 4,
   },
   subtitle: {
-    fontSize: 18,
-    color: '#E3F2FD',
+    fontSize: 14,
   },
   form: {
-    borderRadius: 16,
-    padding: 32,
-    elevation: 8,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
+    borderRadius: 12,
+    padding: 24,
+    elevation: 2,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
   },
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderBottomWidth: 2,
-    borderBottomColor: '#E0E0E0',
-    marginBottom: 24,
+    borderBottomWidth: 1,
+    marginBottom: 20,
     paddingBottom: 8,
   },
   inputIcon: {
@@ -200,18 +193,17 @@ const styles = StyleSheet.create({
   },
   loginButton: {
     borderRadius: 8,
-    paddingVertical: 18,
+    paddingVertical: 16,
     alignItems: 'center',
-    marginTop: 16,
-    elevation: 4,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
+    marginTop: 12,
+    elevation: 1,
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
   },
   loginButtonText: {
-    fontSize: 18,
-    fontWeight: '700',
+    fontSize: 16,
+    fontWeight: '500',
     color: '#FFFFFF',
   },
   forgotButton: {

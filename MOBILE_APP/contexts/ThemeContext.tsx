@@ -23,38 +23,38 @@ export interface Theme {
 
 const lightTheme: Theme = {
   colors: {
-    primary: '#1976D2',
-    background: '#F5F5F5',
-    surface: '#FFFFFF',
-    card: '#FFFFFF',
-    text: '#212121',
-    textSecondary: '#757575',
-    border: '#E0E0E0',
-    success: '#4CAF50',
-    warning: '#FF9800',
-    error: '#F44336',
-    info: '#2196F3',
-    disabled: '#BDBDBD',
-    shadow: '#000000',
+    primary: 'hsl(25.71, 64.71%, 60.78%)', // Same as portal web primary
+    background: 'hsl(95.10, 47.37%, 98.04%)', // Same as portal web background  
+    surface: 'hsl(95.10, 47.37%, 98.04%)',
+    card: 'hsl(95.10, 47.37%, 98.04%)', // Same as portal web card
+    text: 'hsl(95.72, 28.57%, 34.31%)', // Same as portal web foreground
+    textSecondary: 'hsl(97.42, 7.69%, 60.59%)', // Same as portal web muted-foreground
+    border: 'hsl(97.36, 27.27%, 88.43%)', // Same as portal web border
+    success: 'hsl(120, 45%, 55%)',
+    warning: 'hsl(39, 95%, 60%)', 
+    error: 'hsl(0, 72%, 60%)',
+    info: 'hsl(25.71, 64.71%, 60.78%)',
+    disabled: 'hsl(0, 0%, 74%)',
+    shadow: 'hsl(0, 0%, 0%)',
   },
   isDark: false,
 };
 
 const darkTheme: Theme = {
   colors: {
-    primary: '#64B5F6',
-    background: '#121212',
-    surface: '#1E1E1E',
-    card: '#2D2D2D',
-    text: '#FFFFFF',
-    textSecondary: '#B0B0B0',
-    border: '#404040',
-    success: '#66BB6A',
-    warning: '#FFB74D',
-    error: '#EF5350',
-    info: '#42A5F5',
-    disabled: '#616161',
-    shadow: '#000000',
+    primary: 'hsl(38.76, 63.16%, 67.25%)', // Same as portal web dark primary
+    background: 'hsl(106.64, 36.36%, 26.67%)', // Same as portal web dark background
+    surface: 'hsl(106.64, 36.36%, 26.67%)',
+    card: 'hsl(106.64, 36.36%, 26.67%)', // Same as portal web dark card
+    text: 'hsl(93.01, 70.59%, 80.59%)', // Same as portal web dark foreground
+    textSecondary: 'hsl(99.07, 52.63%, 77.06%)', // Same as portal web dark muted-foreground
+    border: 'hsl(106.89, 60.61%, 36.08%)', // Same as portal web dark border
+    success: 'hsl(120, 45%, 65%)',
+    warning: 'hsl(39, 85%, 70%)',
+    error: 'hsl(0, 72%, 70%)',
+    info: 'hsl(38.76, 63.16%, 67.25%)',
+    disabled: 'hsl(0, 0%, 38%)',
+    shadow: 'hsl(0, 0%, 0%)',
   },
   isDark: true,
 };

@@ -8,7 +8,7 @@ import EventConfirmationModal from '@/components/EventConfirmationModal';
 import { useDriverState } from '@/hooks/useDriverState';
 import { useLocation } from '@/hooks/useLocation';
 import { DriverEvent } from '@/types/driver';
-import { TriangleAlert as AlertTriangle } from 'lucide-react-native';
+import { AlertTriangle, Truck, Coffee, Bed, Clock, Search, StopCircle, CheckCircle } from 'lucide-react-native';
 import { useTheme } from '@/contexts/ThemeContext';
 
 export default function HomeScreen() {
@@ -25,7 +25,7 @@ export default function HomeScreen() {
   const [currentLocation, setCurrentLocation] = useState<any>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   
-  const handleEventPress = async (eventType: string, eventLabel: string, icon: string) => {
+  const handleEventPress = async (eventType: string, eventLabel: string) => {
     // Check if action is allowed
     const validation = canPerformAction(eventType);
     if (!validation.allowed) {
@@ -35,7 +35,7 @@ export default function HomeScreen() {
     }
 
     // Set selected event and show modal
-    setSelectedEvent({ type: eventType, label: eventLabel, icon });
+    setSelectedEvent({ type: eventType, label: eventLabel, icon: eventType });
     setModalVisible(true);
     
     // Get location in background
@@ -93,10 +93,10 @@ export default function HomeScreen() {
       buttons.push(
         <ActionButton
           key="journey_start"
-          title="INICIAR JORNADA"
-          icon="🚛"
-          variant="success"
-          onPress={() => handleEventPress('journey_start', 'Iniciar Jornada', '🚛')}
+          title="Iniciar Jornada"
+          icon={Truck}
+          variant="default"
+          onPress={() => handleEventPress('journey_start', 'Iniciar Jornada')}
         />
       );
     }
@@ -105,10 +105,10 @@ export default function HomeScreen() {
       buttons.push(
         <ActionButton
           key="journey_end"
-          title="ENCERRAR JORNADA"
-          icon="🏁"
-          variant="danger"
-          onPress={() => handleEventPress('journey_end', 'Encerrar Jornada', '🏁')}
+          title="Encerrar Jornada"
+          icon={StopCircle}
+          variant="destructive"
+          onPress={() => handleEventPress('journey_end', 'Encerrar Jornada')}
         />
       );
     }
@@ -118,10 +118,10 @@ export default function HomeScreen() {
       buttons.push(
         <ActionButton
           key="meal_start"
-          title="INICIAR REFEIÇÃO"
-          icon="🍽️"
-          variant="warning"
-          onPress={() => handleEventPress('meal_start', 'Iniciar Refeição', '🍽️')}
+          title="Iniciar Refeição"
+          icon={Coffee}
+          variant="secondary"
+          onPress={() => handleEventPress('meal_start', 'Iniciar Refeição')}
         />
       );
     }
@@ -130,11 +130,10 @@ export default function HomeScreen() {
       buttons.push(
         <ActionButton
           key="meal_end"
-          title="FIM REFEIÇÃO"
-          icon="✅"
-          variant="success"
-          pulse={true}
-          onPress={() => handleEventPress('meal_end', 'Fim da Refeição', '✅')}
+          title="Fim da Refeição"
+          icon={CheckCircle}
+          variant="default"
+          onPress={() => handleEventPress('meal_end', 'Fim da Refeição')}
         />
       );
     }
@@ -144,10 +143,10 @@ export default function HomeScreen() {
       buttons.push(
         <ActionButton
           key="rest_start"
-          title="INICIAR DESCANSO"
-          icon="😴"
-          variant="primary"
-          onPress={() => handleEventPress('rest_start', 'Iniciar Descanso', '😴')}
+          title="Iniciar Descanso"
+          icon={Bed}
+          variant="secondary"
+          onPress={() => handleEventPress('rest_start', 'Iniciar Descanso')}
         />
       );
     }
@@ -156,11 +155,10 @@ export default function HomeScreen() {
       buttons.push(
         <ActionButton
           key="rest_end"
-          title="FIM DESCANSO"
-          icon="⏰"
-          variant="success"
-          pulse={true}
-          onPress={() => handleEventPress('rest_end', 'Fim do Descanso', '⏰')}
+          title="Fim do Descanso"
+          icon={CheckCircle}
+          variant="default"
+          onPress={() => handleEventPress('rest_end', 'Fim do Descanso')}
         />
       );
     }
@@ -170,10 +168,10 @@ export default function HomeScreen() {
       buttons.push(
         <ActionButton
           key="available"
-          title="À DISPOSIÇÃO"
-          icon="⏳"
-          variant="primary"
-          onPress={() => handleEventPress('available', 'À Disposição', '⏳')}
+          title="À Disposição"
+          icon={Clock}
+          variant="outline"
+          onPress={() => handleEventPress('available', 'À Disposição')}
         />
       );
     }
@@ -182,10 +180,10 @@ export default function HomeScreen() {
       buttons.push(
         <ActionButton
           key="inspection"
-          title="FISCALIZAÇÃO"
-          icon="🔍"
-          variant="warning"
-          onPress={() => handleEventPress('inspection', 'Fiscalização', '🔍')}
+          title="Fiscalização"
+          icon={Search}
+          variant="outline"
+          onPress={() => handleEventPress('inspection', 'Fiscalização')}
         />
       );
     }
@@ -206,19 +204,18 @@ export default function HomeScreen() {
         
         {suggestions.length > 0 && (
           <View style={[styles.suggestionsContainer, { 
-            backgroundColor: theme.isDark ? '#2D1B00' : '#FFF3E0',
+            backgroundColor: theme.colors.card,
+            borderColor: theme.colors.warning,
             borderLeftColor: theme.colors.warning 
           }]}>
             <View style={styles.suggestionHeader}>
-              <AlertTriangle size={20} color={theme.colors.warning} />
-              <Text style={[styles.suggestionTitle, { 
-                color: theme.isDark ? '#FFB74D' : '#E65100' 
-              }]}>Sugestões</Text>
+              <AlertTriangle size={16} color={theme.colors.warning} />
+              <Text style={[styles.suggestionTitle, { color: theme.colors.text }]}>
+                Sugestões
+              </Text>
             </View>
             {suggestions.map((suggestion, index) => (
-              <Text key={index} style={[styles.suggestionText, { 
-                color: theme.isDark ? '#FF8A65' : '#BF360C' 
-              }]}>
+              <Text key={index} style={[styles.suggestionText, { color: theme.colors.textSecondary }]}>
                 • {suggestion}
               </Text>
             ))}
@@ -249,11 +246,11 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   title: {
-    fontSize: 28,
-    fontWeight: '700',
+    fontSize: 24,
+    fontWeight: '600',
     textAlign: 'center',
-    marginTop: 60,
-    marginBottom: 20,
+    marginTop: 16,
+    marginBottom: 16,
   },
   actionsContainer: {
     paddingBottom: 100,
@@ -261,22 +258,23 @@ const styles = StyleSheet.create({
   suggestionsContainer: {
     marginHorizontal: 16,
     marginBottom: 16,
-    borderRadius: 12,
+    borderRadius: 8,
     padding: 16,
+    borderWidth: 1,
     borderLeftWidth: 4,
   },
   suggestionHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 8,
+    gap: 6,
   },
   suggestionTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    marginLeft: 8,
+    fontSize: 14,
+    fontWeight: '500',
   },
   suggestionText: {
-    fontSize: 14,
-    lineHeight: 20,
+    fontSize: 13,
+    lineHeight: 18,
   },
 });

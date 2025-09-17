@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import { DriverState, STATUS_LABELS, STATUS_ICONS } from '@/types/driver';
-import { Play, Pause, Square } from 'lucide-react-native';
+import { DriverState, STATUS_LABELS } from '@/types/driver';
+import { Play, Pause, Square, Truck, Coffee, Bed, Clock, Search } from 'lucide-react-native';
 import { useTheme } from '@/contexts/ThemeContext';
 
 interface StatusCardProps {
@@ -12,7 +12,26 @@ interface StatusCardProps {
 const StatusCard: React.FC<StatusCardProps> = ({ driverState, onQuickAction }) => {
   const { theme } = useTheme();
   const [elapsedTime, setElapsedTime] = useState('00:00:00');
-  const [isBlinking, setIsBlinking] = useState(false);
+
+  const getStatusIcon = () => {
+    const size = 20;
+    const color = theme.colors.text;
+    
+    switch (driverState.currentStatus) {
+      case 'on_journey':
+        return <Truck size={size} color={color} />;
+      case 'meal':
+        return <Coffee size={size} color={color} />;
+      case 'rest':
+        return <Bed size={size} color={color} />;
+      case 'available':
+        return <Clock size={size} color={color} />;
+
+      case 'off_duty':
+      default:
+        return <Square size={size} color={color} />;
+    }
+  };
 
   useEffect(() => {
     if (!driverState.currentEventStart) {
@@ -42,41 +61,19 @@ const StatusCard: React.FC<StatusCardProps> = ({ driverState, onQuickAction }) =
     return () => clearInterval(interval);
   }, [driverState.currentEventStart]);
 
-  useEffect(() => {
-    // Blink effect for active states
-    if (driverState.currentStatus === 'meal' || driverState.currentStatus === 'rest') {
-      const blinkInterval = setInterval(() => {
-        setIsBlinking(prev => !prev);
-      }, 1000);
-      return () => clearInterval(blinkInterval);
-    }
-  }, [driverState.currentStatus]);
-
   const getStatusColor = () => {
     switch (driverState.currentStatus) {
       case 'on_journey':
-        return '#4CAF50';
+        return theme.colors.primary;
       case 'meal':
-        return '#FF9800';
+        return theme.colors.warning;
       case 'rest':
-        return '#9C27B0';
+        return theme.colors.info;
       case 'available':
-        return '#1976D2';
+        return theme.colors.success;
       case 'off_duty':
       default:
-        return '#757575';
-    }
-  };
-
-  const getStatusIcon = () => {
-    switch (driverState.currentStatus) {
-      case 'on_journey':
-        return <Play size={24} color="#FFFFFF" />;
-      case 'meal':
-      case 'rest':
-        return <Pause size={24} color="#FFFFFF" />;
-      default:
-        return <Square size={24} color="#FFFFFF" />;
+        return theme.colors.textSecondary;
     }
   };
 
@@ -84,39 +81,31 @@ const StatusCard: React.FC<StatusCardProps> = ({ driverState, onQuickAction }) =
     <View style={[
       styles.container, 
       { 
-        borderLeftColor: getStatusColor(),
         backgroundColor: theme.colors.card,
+        borderColor: theme.colors.border,
         shadowColor: theme.colors.shadow,
       }
     ]}>
       <View style={styles.header}>
-        <Text style={styles.icon}>
-          {STATUS_ICONS[driverState.currentStatus]}
-        </Text>
+        <View style={styles.iconContainer}>
+          {getStatusIcon()}
+        </View>
         <Text style={[styles.status, { color: theme.colors.text }]}>
           {STATUS_LABELS[driverState.currentStatus]}
         </Text>
       </View>
       
       <TouchableOpacity 
-        style={[
-          styles.timerContainer,
-          isBlinking && styles.blinking
-        ]}
+        style={styles.timerContainer}
         onPress={onQuickAction}
         disabled={!onQuickAction}
       >
-        <Text style={[styles.timer, { color: theme.colors.primary }]}>
+        <Text style={[styles.timer, { color: getStatusColor() }]}>
           {elapsedTime}
         </Text>
-        {onQuickAction && (
-          <View style={[styles.quickActionIcon, { backgroundColor: getStatusColor() }]}>
-            {getStatusIcon()}
-          </View>
-        )}
       </TouchableOpacity>
       
-      <View style={styles.totals}>
+      <View style={[styles.totals, { borderTopColor: theme.colors.border }]}>
         <View style={styles.totalItem}>
           <Text style={[styles.totalLabel, { color: theme.colors.textSecondary }]}>
             Jornada Hoje
@@ -143,70 +132,55 @@ const StatusCard: React.FC<StatusCardProps> = ({ driverState, onQuickAction }) =
 
 const styles = StyleSheet.create({
   container: {
-    borderRadius: 16,
-    padding: 24,
+    borderRadius: 12,
+    padding: 20,
     margin: 16,
-    borderLeftWidth: 6,
-    elevation: 8,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
+    borderWidth: 1,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 16,
+    marginBottom: 20,
+    gap: 8,
   },
-  icon: {
-    fontSize: 32,
-    marginRight: 12,
+  iconContainer: {
+    padding: 4,
   },
   status: {
-    fontSize: 20,
-    fontWeight: '700',
+    fontSize: 18,
+    fontWeight: '600',
   },
   timerContainer: {
     alignItems: 'center',
     marginBottom: 20,
-    position: 'relative',
   },
   timer: {
-    fontSize: 48,
-    fontWeight: '800',
+    fontSize: 36,
+    fontWeight: '700',
     textAlign: 'center',
     fontFamily: 'monospace',
-  },
-  blinking: {
-    opacity: 0.7,
-  },
-  quickActionIcon: {
-    position: 'absolute',
-    right: -40,
-    top: '50%',
-    marginTop: -20,
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    justifyContent: 'center',
-    alignItems: 'center',
   },
   totals: {
     flexDirection: 'row',
     justifyContent: 'space-around',
-    borderTopWidth: 1,
-    borderTopColor: '#E0E0E0',
     paddingTop: 16,
+    borderTopWidth: 1,
   },
   totalItem: {
     alignItems: 'center',
   },
   totalLabel: {
-    fontSize: 14,
+    fontSize: 12,
     marginBottom: 4,
+    opacity: 0.7,
   },
   totalValue: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: '600',
   },
 });
