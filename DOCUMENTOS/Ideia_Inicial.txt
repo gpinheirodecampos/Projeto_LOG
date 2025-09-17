@@ -1,0 +1,321 @@
+Vamos transformar sua ideia em um plano claro e acionável; vou mapear requisitos, arquitetura, UX, dados, conformidade e fechar com um roadmap e próximos passos práticos.
+
+## Objetivos e contexto
+
+- Eliminar o diário de bordo em papel e o retrabalho do RH.
+- Registrar eventos de jornada com precisão, simplicidade e robustez (offline).
+- Disponibilizar relatórios confiáveis para motorista e empresa (portal).
+- Servir como respaldo trabalhista (com auditoria, trilhas de alteração e evidências).
+
+## Personas
+
+- Motorista: usa o app, registra eventos, consulta horas do dia/mês.
+- Operador/RH: valida/extrai relatórios, corrige inconsistências com justificativa.
+- Gestor de frota: acompanha operação (tempo em cada status, alertas).
+- Admin: gerencia empresas, motoristas, veículos, permissões e integrações.
+
+## Requisitos principais
+
+Funcionais (App Motorista)
+- Autenticação simples (telefone+PIN ou e-mail+senha) e recuperação de acesso.
+- Registro de eventos com 1 toque: início/fim de jornada, refeição, descanso, à disposição, fiscalização. (Extensível: abastecimento, carga/descarga, manutenção.)
+- Tela principal com status atual e cronômetros em destaque; histórico do dia.
+- Geolocalização opcional para enriquecer os eventos (com consentimento).
+- Offline-first: funciona sem internet; sincroniza quando a conexão volta.
+- Edição controlada: permitir correções com justificativa e trilha de auditoria.
+- Notificações: lembrete de descanso, inatividade, esquecimento de encerrar evento.
+
+Funcionais (Portal Web)
+- Dashboard (resumo por motoristas/veículos/dias).
+- CRUD: empresas, motoristas, veículos, vínculos e permissões.
+- Timeline de eventos por motorista/dia; filtros e exportação (CSV/PDF).
+- Relatórios: horas trabalhadas, descanso, refeição, à disposição; por período.
+- Fluxo de validação/aprovação e correções com log e anexos.
+
+Não funcionais
+- Simplicidade e acessibilidade (botões grandes, poucas opções por tela).
+- LGPD: consentimento, minimização de dados, retenção e portal do titular.
+- Segurança: criptografia em trânsito e em repouso; RBAC; trilha de auditoria.
+- Escalabilidade inicial simples (monólito bem estruturado) e observabilidade.
+- Suporte a Android primeiro (maior adoção), iOS depois.
+
+## UX do app (princípios e telas)
+
+- Princípios: 1 ação por tela, textos curtos, ícones claros, feedback háptico/sonoro, off-line transparente, modo noturno, fonte grande.
+- Telas:
+  - Login rápido (PIN/biometria).
+  - Home: “Seu status agora” (ex.: Em jornada há 02:13), cronômetros, 3–5 botões grandes: Iniciar/Encerrar jornada, Iniciar/Fim refeição, Iniciar/Fim descanso, À disposição, Fiscalização.
+  - Confirmações curtas (para evitar toques acidentais).
+  - Histórico do dia com linha do tempo e totais.
+  - Ajustar evento (com justificativa) e anexos (foto do documento, se preciso).
+- Proteções: não permitir dois eventos conflitantes; impedir “Fim” sem “Início”; auto-sugerir encerrar evento ao detectar movimento/parada via GPS (opt-in).
+
+## Arquitetura sugerida
+
+- Mobile: React Native (Android/iOS) com SQLite (react-native-sqlite-storage) para offline, geolocalização, push (React Native Push Notification).
+- Backend: .NET 8 + C# + Entity Framework Core; REST API; SQL Server/Postgres; Redis (cache/filas leves).
+- Portal Web: React + Vite + Ant Design/MUI para agilidade.
+- Infra inicial: Docker Compose para dev; nuvem (AWS/GCP/Azure) com 1 serviço web + Postgres gerenciado quando for para produção.
+- Observabilidade: Sentry (app + web + backend), logs estruturados (pino), métricas (Prometheus/Grafana ou APM da nuvem).
+
+Arquitetura lógica
+- App (offline-first) → API REST (JWT) → Postgres (modelo relacional) + Redis (fila/cache).
+- Jobs de consolidação de relatórios e geração de PDFs.
+- Storage de anexos (S3/Cloud Storage) para fotos e comprovantes.
+
+## Modelo de dados (resumo)
+
+Entidades principais
+- Company(id, name, cnpj, …)
+- Driver(id, company_id, name, cpf, phone, status)
+- Vehicle(id, company_id, plate, model, …)
+- Assignment(id, driver_id, vehicle_id, start_at, end_at)
+- Event(id, driver_id, company_id, vehicle_id?, type, started_at, ended_at?, location_start?, location_end?, source, edited_by?, edit_reason?, device_time_skew_ms, created_at)
+- WorkdaySummary(id, driver_id, date, total_worked, total_rest, total_meal, total_disposition, anomalies)
+- AuditLog(id, actor_id, action, entity, entity_id, changes, created_at)
+
+Tipos de evento (extensível)
+- SHIFT_START, SHIFT_END
+- MEAL_START, MEAL_END
+- REST_START, REST_END
+- DISPOSAL_START, DISPOSAL_END
+- INSPECTION_START, INSPECTION_END
+
+Regras de integridade
+- Apenas 1 evento “aberto” por motorista.
+- Pares start/end obrigatórios; SHIFT deve englobar subeventos.
+- Sem sobreposição de intervalos para o mesmo motorista.
+- Timestamps do cliente aceitos com marcação de skew e fonte (manual/auto).
+
+Exemplo SQL simplificado
+````sql
+CREATE TYPE event_type AS ENUM (
+  'SHIFT_START','SHIFT_END',
+  'MEAL_START','MEAL_END',
+  'REST_START','REST_END',
+  'DISPOSAL_START','DISPOSAL_END',
+  'INSPECTION_START','INSPECTION_END'
+);
+
+CREATE TABLE drivers (
+  id UUID PRIMARY KEY,
+  company_id UUID NOT NULL,
+  name TEXT NOT NULL,
+  cpf TEXT UNIQUE,
+  phone TEXT,
+  status TEXT DEFAULT 'active',
+  created_at TIMESTAMPTZ DEFAULT now()
+);
+
+CREATE TABLE events (
+  id UUID PRIMARY KEY,
+  driver_id UUID NOT NULL REFERENCES drivers(id),
+  company_id UUID NOT NULL,
+  vehicle_id UUID NULL,
+  type event_type NOT NULL,
+  started_at TIMESTAMPTZ NOT NULL,
+  ended_at TIMESTAMPTZ NULL,
+  location_start GEOGRAPHY(POINT,4326) NULL,
+  location_end GEOGRAPHY(POINT,4326) NULL,
+  source TEXT NOT NULL, -- 'mobile_manual' | 'mobile_auto' | 'portal'
+  edited_by UUID NULL,
+  edit_reason TEXT NULL,
+  device_time_skew_ms INT NULL,
+  created_at TIMESTAMPTZ DEFAULT now(),
+  CONSTRAINT non_overlap CHECK (ended_at IS NULL OR ended_at > started_at)
+);
+
+CREATE INDEX idx_events_driver_time ON events(driver_id, started_at);
+CREATE INDEX idx_events_company_time ON events(company_id, started_at);
+````
+
+## Máquina de estados (consistência)
+
+- Estados de topo do motorista: OFF_SHIFT | ON_SHIFT.
+- Subestados dentro de ON_SHIFT: WORKING | MEAL | REST | DISPOSAL | INSPECTION.
+- Regras:
+  - SHIFT_START só permitido em OFF_SHIFT; SHIFT_END fecha qualquer subestado aberto e volta a OFF_SHIFT.
+  - Para subestados, apenas um ativo; iniciar um fecha o anterior (com confirmação).
+  - Eventos não podem cruzar fora do período de jornada.
+
+Pseudocódigo de validação
+````ts
+function canStart(type, currentState) { /* valida transições */ }
+function openEvent(driverId, type, t) { /* fecha se houver outro subestado, abre novo */ }
+function closeEvent(driverId, type, t) { /* garante que exista par correspondente */ }
+````
+
+## Cálculo de horas (configurável)
+
+- Definir políticas por empresa (parametrizável) para o que conta como tempo de trabalho.
+- Exemplo de agregação diária:
+  - $total\_jornada = \sum (SHIFT\_END - SHIFT\_START)$
+  - $total\_meal = \sum (MEAL\_END - MEAL\_START)$
+  - $total\_rest = \sum (REST\_END - REST\_START)$
+  - $total\_disposicao = \sum (DISPOSAL\_END - DISPOSAL\_START)$
+  - $total\_trabalho = total\_jornada - total\_meal - total\_rest$ (ajuste conforme regras da empresa/lei)
+- Guardar parâmetros por empresa para arredondamentos, tolerâncias e classificações.
+
+Importante: alinhar com a legislação aplicável (ex.: Lei 13.103/2015 no Brasil) com apoio jurídico; tratamos isso como configuração para não “cravar” interpretações no código.
+
+## Segurança e LGPD
+
+- Consentimento explícito para geolocalização e finalidade.
+- Criptografia: TLS em trânsito, base móvel cifrada (KeyStore), dados sensíveis minimizados.
+- Autenticação: JWT + refresh; login por dispositivo; RBAC (Admin, RH, Gestor, Motorista).
+- Auditoria completa de alterações (quem, quando, antes/depois).
+- Retenção de dados e anonimizador de histórico por política de empresa.
+
+## Sincronização e offline
+
+- Identificador de idempotência por evento (UUID gerado no device).
+- Fila local de eventos; sync incremental; replays idempotentes.
+- Resolução de conflito: servidor como source-of-truth; não sobrepor eventos aprovados; marcação de “ajuste necessário” quando receber eventos que criam inconsistências.
+- Deriva de relógio: enviar timestamp do dispositivo + servidor aplica correção baseada em NTP; flag para o RH.
+
+## Portal Web (funcionalidades chave)
+
+- Dashboard com cartões: horas trabalhadas, descanso, eventos pendentes de revisão.
+- Lista de motoristas/veículos com busca e filtros.
+- Timeline por motorista/dia, com edição pontual (log de justificativa).
+- Relatórios por período; exportar CSV/PDF; integração com planilhas/payroll.
+- Gestão de cadastros e permissões.
+
+## API (amostra)
+
+- POST /v1/events
+````json
+{
+  "id": "4f1c…", 
+  "driverId": "…",
+  "companyId": "…",
+  "vehicleId": "…",
+  "type": "SHIFT_START",
+  "startedAt": "2025-09-12T07:32:00-03:00",
+  "locationStart": { "lat": -23.55, "lng": -46.63, "accuracyM": 15 },
+  "source": "mobile_manual",
+  "deviceTimeSkewMs": 120
+}
+````
+- PATCH /v1/events/{id} — encerrar evento, corrigir horário (com motivo).
+- GET /v1/drivers/{id}/workdays?from=…&to=… — totais do período.
+- GET /v1/reports/hours?companyId=…&from=…&to=… — relatório agregado.
+
+## Métricas e qualidade
+
+- Observabilidade: erros no app (Sentry), logs estruturados no backend, traços.
+- QA de campo: testflight/internal app no Android com telefones de baixa performance, testes offline, bateria e GPS.
+- Indicadores de sucesso:
+  - >95% dos dias com eventos completos sem intervenção do RH.
+  - Tempo de processamento mensal do RH reduzido em >70%.
+  - Menos de 0,5% de eventos com sobreposição após 2 meses.
+
+## Roadmap (enxuto)
+
+Fase 0 — Descoberta (1–2 semanas)
+- Entrevistas com 5–10 motoristas e 3–5 operadores de RH.
+- Definir catálogo de eventos e políticas por empresa.
+- Wireframes no Figma (app + portal) e fluxos FSM.
+
+Fase 1 — MVP (4–6 semanas)
+- App: login, FSM de eventos, offline básico, sync, home + histórico.
+- Backend: autenticação, CRUD básico, eventos, agregação diária.
+- Portal: listagens e timeline de eventos, leitura e export CSV.
+- Relatórios simples (horas por dia/motorista).
+
+Fase 2 — Beta (4–6 semanas)
+- Edição com justificativa, auditoria completa, anexos.
+- Notificações, melhorias de UX, acessibilidade.
+- PDFs de relatório e aprovações.
+- Hardening de segurança e observabilidade.
+
+Fase 3 — V1 (6–8 semanas)
+- Parametrização avançada por empresa (regras/horas).
+- Integrações (planilha padrão, API de folha).
+- Alertas operacionais (ex.: jornada prestes a exceder).
+- Otimização de performance e custos.
+
+## Estrutura de repositório (monorepo opcional)
+
+````text
+repo/
+  apps/
+    mobile/           # React Native
+    web-portal/       # React + Vite
+    api/              # .NET 8 Web API
+  packages/
+    shared-types/     # TypeScript types, contratos de API
+  infra/
+    docker-compose.yml
+    migrations/       # Entity Framework migrations
+  docs/
+    prd.md
+    architecture.md
+````
+
+docker-compose para dev (SQL Server + Redis)
+````yaml
+version: '3.8'
+services:
+  db:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    environment:
+      SA_PASSWORD: 'YourStrong!Passw0rd'
+      ACCEPT_EULA: 'Y'
+    ports: ['1433:1433']
+    volumes: ['sqldata:/var/opt/mssql']
+  redis:
+    image: redis:7
+    ports: ['6379:6379']
+volumes:
+  sqldata:
+````
+
+Comandos (PowerShell) para bootstrap quando quiser iniciar o repositório
+````powershell
+# Criar pastas
+mkdir repo; cd repo
+git init
+
+# Backend .NET
+dotnet new webapi -n api
+cd api
+dotnet add package Microsoft.EntityFrameworkCore.SqlServer
+dotnet add package Microsoft.EntityFrameworkCore.Tools
+cd ..
+
+# Web portal (React + Vite)
+npm create vite@latest web-portal -- --template react-ts
+cd web-portal
+npm install antd @ant-design/icons
+cd ..
+
+# Mobile React Native
+npx react-native@latest init mobile
+cd mobile
+npm install react-native-sqlite-storage @react-native-async-storage/async-storage
+cd ..
+````
+
+## Próximos passos (esta semana)
+
+1) Confirme escopo inicial de eventos e políticas por empresa (o que conta como “trabalho” vs “à disposição”).  
+2) Aprovar wireframes de 5 telas do app (eu posso desenhar a estrutura e textos).  
+3) Definir FSM final de eventos (tabela de transições).  
+4) Fechar entidades/atributos mínimos (Driver, Vehicle, Event).  
+5) Decidir stack final (ok com Flutter + NestJS + Postgres?).  
+6) Iniciar repositório e subir Postgres/Redis com Docker.  
+7) Implementar API: autenticação + POST/GET de eventos + agregação diária.  
+8) Implementar app: login, home, iniciar/encerrar jornada e descanso, sync offline.  
+9) Portal: lista motoristas e timeline por dia.  
+10) Preparar piloto com 3–5 motoristas por 2 semanas.
+
+## Decisões tomadas ✅
+
+- ✅ Foco inicial é Brasil (Lei 13.103/2015 será considerada, mas não eSocial no MVP)
+- ✅ React Native para iOS e Android simultaneamente (não só Android)  
+- ✅ Exportação CSV suficiente no MVP (integração com folha fica para depois)  
+- ✅ Suporte a empresas multi-filiais/multi-CNPJ e motoristas multi-vínculo  
+- ✅ Localização capturada em TODOS os eventos para auditoria completa
+
+Se quiser, já preparo o esqueleto do repositório (pastas, `docker-compose`, endpoints base, esquema inicial) e te entrego um pacote inicial para rodar localmente.

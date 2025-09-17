@@ -1,0 +1,14 @@
+{
+	"servers": {
+		"shadcn-mcp": {
+			"type": "stdio",
+			"command": "npx",
+			"args": [
+				"@jpisnice/shadcn-ui-mcp-server",
+				"--github-api-key",
+				"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"
+			]
+		}
+	},
+	"inputs": []
+}
