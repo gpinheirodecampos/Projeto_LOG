@@ -41,20 +41,21 @@ export const STATUS_LABELS = {
 };
 
 export const STATUS_ICONS = {
-  off_duty: '🏠',
-  on_journey: '🚛',
-  meal: '🍽️',
-  rest: '😴',
-  available: '⏳',
+  // Use Lucide icon identifiers (consumed where needed via IconMap)
+  off_duty: 'Square',
+  on_journey: 'Play',
+  meal: 'Coffee',
+  rest: 'Bed',
+  available: 'Clock',
 };
 
 export const EVENT_COLORS = {
-  journey_start: '#4CAF50',
-  journey_end: '#F44336',
-  meal_start: '#FF9800',
-  meal_end: '#4CAF50',
-  rest_start: '#9C27B0',
-  rest_end: '#4CAF50',
-  available: '#1976D2',
-  inspection: '#FF5722',
+  journey_start: '#16a34a',
+  journey_end: '#ef4444',
+  meal_start: '#f59e0b',
+  meal_end: '#16a34a',
+  rest_start: '#4f46e5',
+  rest_end: '#16a34a',
+  available: '#4f46e5',
+  inspection: '#f59e0b',
 };

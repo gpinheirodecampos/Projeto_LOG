@@ -23,38 +23,39 @@ export interface Theme {
 
 const lightTheme: Theme = {
   colors: {
-    primary: 'hsl(25.71, 64.71%, 60.78%)', // Same as portal web primary
-    background: 'hsl(95.10, 47.37%, 98.04%)', // Same as portal web background  
-    surface: 'hsl(95.10, 47.37%, 98.04%)',
-    card: 'hsl(95.10, 47.37%, 98.04%)', // Same as portal web card
-    text: 'hsl(95.72, 28.57%, 34.31%)', // Same as portal web foreground
-    textSecondary: 'hsl(97.42, 7.69%, 60.59%)', // Same as portal web muted-foreground
-    border: 'hsl(97.36, 27.27%, 88.43%)', // Same as portal web border
-    success: 'hsl(120, 45%, 55%)',
-    warning: 'hsl(39, 95%, 60%)', 
-    error: 'hsl(0, 72%, 60%)',
-    info: 'hsl(25.71, 64.71%, 60.78%)',
-    disabled: 'hsl(0, 0%, 74%)',
-    shadow: 'hsl(0, 0%, 0%)',
+    // Palette aligned to portal index.css (OKLCH approximations)
+    primary: '#4f46e5', // Indigo 600 ~ oklch(0.5461 0.2152 262.88)
+    background: '#ffffff',
+    surface: '#ffffff',
+    card: '#ffffff',
+    text: '#1f1f1f', // ~ oklch(0.3211 0 0)
+    textSecondary: '#6b7280', // slate-500 ~ muted-foreground
+    border: '#e5e7eb', // gray-200 ~ oklch(0.9276 ...)
+    success: '#16a34a', // green-600
+    warning: '#f59e0b', // amber-500/600
+    error: '#ef4444',   // red-500
+    info: '#4f46e5',    // match primary
+    disabled: '#d1d5db', // gray-300
+    shadow: '#000000',
   },
   isDark: false,
 };
 
 const darkTheme: Theme = {
   colors: {
-    primary: 'hsl(38.76, 63.16%, 67.25%)', // Same as portal web dark primary
-    background: 'hsl(106.64, 36.36%, 26.67%)', // Same as portal web dark background
-    surface: 'hsl(106.64, 36.36%, 26.67%)',
-    card: 'hsl(106.64, 36.36%, 26.67%)', // Same as portal web dark card
-    text: 'hsl(93.01, 70.59%, 80.59%)', // Same as portal web dark foreground
-    textSecondary: 'hsl(99.07, 52.63%, 77.06%)', // Same as portal web dark muted-foreground
-    border: 'hsl(106.89, 60.61%, 36.08%)', // Same as portal web dark border
-    success: 'hsl(120, 45%, 65%)',
-    warning: 'hsl(39, 85%, 70%)',
-    error: 'hsl(0, 72%, 70%)',
-    info: 'hsl(38.76, 63.16%, 67.25%)',
-    disabled: 'hsl(0, 0%, 38%)',
-    shadow: 'hsl(0, 0%, 0%)',
+    primary: '#8b8cf7', // lighter indigo for dark contrast
+    background: '#0f1115', // ~ oklch(0.2046 0 0)
+    surface: '#12151c',
+    card: '#171923', // ~ oklch(0.2686 0 0)
+    text: '#e5e7eb', // ~ oklch(0.9219 0 0)
+    textSecondary: '#9ca3af', // ~ oklch(0.7155 0 0)
+    border: '#2d3240', // ~ oklch(0.3715 0 0)
+    success: '#22c55e', // green-500 (slightly brighter on dark)
+    warning: '#fbbf24', // amber-400/500
+    error: '#f87171',   // red-400/500
+    info: '#8b8cf7',
+    disabled: '#4b5563',
+    shadow: '#000000',
   },
   isDark: true,
 };

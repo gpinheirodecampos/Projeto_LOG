@@ -56,14 +56,14 @@ export const StatusIconsMap = {
 
 // Cores para cada tipo de evento (seguindo shadcn/ui)
 export const EventColors = {
-  journey_start: 'hsl(120, 45%, 55%)', // success
-  journey_end: 'hsl(0, 72%, 60%)', // destructive
-  meal_start: 'hsl(39, 95%, 60%)', // warning
-  meal_end: 'hsl(120, 45%, 55%)', // success
-  rest_start: 'hsl(220, 70%, 55%)', // primary variant
-  rest_end: 'hsl(120, 45%, 55%)', // success
-  available: 'hsl(25.71, 64.71%, 60.78%)', // primary
-  inspection: 'hsl(39, 95%, 60%)', // warning
+  journey_start: '#16a34a', // success
+  journey_end: '#ef4444', // destructive
+  meal_start: '#f59e0b', // warning
+  meal_end: '#16a34a', // success
+  rest_start: '#4f46e5', // primary
+  rest_end: '#16a34a', // success
+  available: '#4f46e5', // primary
+  inspection: '#f59e0b', // warning
 } as const;
 
 export type EventType = keyof typeof EventIcons;

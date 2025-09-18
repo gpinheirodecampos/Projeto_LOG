@@ -2,6 +2,8 @@ import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { DriverEvent, EVENT_LABELS } from '@/types/driver';
 import { useTheme } from '@/contexts/ThemeContext';
+import { EventIcons, EventColors } from '@/components/IconMap';
+import { MapPin, Info } from 'lucide-react-native';
 
 interface TimelineItemProps {
   event: DriverEvent;
@@ -30,33 +32,19 @@ const TimelineItem: React.FC<TimelineItemProps> = ({ event, showDuration = true 
     return ` (${minutes}min)`;
   };
 
-  const getEventIcon = (type: string) => {
-    switch (type) {
-      case 'journey_start': return '🚛';
-      case 'journey_end': return '🏁';
-      case 'meal_start': return '🍽️';
-      case 'meal_end': return '✅';
-      case 'rest_start': return '😴';
-      case 'rest_end': return '⏰';
-      case 'available': return '⏳';
-      case 'inspection': return '🔍';
-      default: return '📍';
-    }
-  };
-
-  const getEventColor = (type: string) => {
-    if (type.includes('start')) return '#4CAF50';
-    if (type.includes('end')) return '#F44336';
-    return '#1976D2';
-  };
+  const getIconComponent = (type: keyof typeof EventIcons) => EventIcons[type] ?? EventIcons.journey_start;
+  const getEventColor = (type: keyof typeof EventColors) => EventColors[type] ?? theme.colors.primary;
 
   return (
     <View style={[styles.container, { 
       backgroundColor: theme.colors.card,
       borderBottomColor: theme.colors.border,
     }]}>
-      <View style={[styles.iconContainer, { backgroundColor: getEventColor(event.type) }]}>
-        <Text style={styles.icon}>{getEventIcon(event.type)}</Text>
+      <View style={[styles.iconContainer, { backgroundColor: getEventColor(event.type as keyof typeof EventColors) }]}>
+        {(() => {
+          const Icon = getIconComponent(event.type as keyof typeof EventIcons);
+          return <Icon size={20} color="#FFFFFF" />;
+        })()}
       </View>
       
       <View style={styles.content}>
@@ -71,15 +59,21 @@ const TimelineItem: React.FC<TimelineItemProps> = ({ event, showDuration = true 
         </View>
         
         {event.location && (
-          <Text style={[styles.location, { color: theme.colors.textSecondary }]}>
-            📍 {event.location.address}
-          </Text>
+          <View style={styles.inlineRow}>
+            <MapPin size={16} color={theme.colors.textSecondary} />
+            <Text style={[styles.location, { color: theme.colors.textSecondary }]}>
+              {event.location.address}
+            </Text>
+          </View>
         )}
         
         {event.reason && (
-          <Text style={[styles.reason, { color: theme.colors.warning }]}>
-            ℹ️ {event.reason}
-          </Text>
+          <View style={styles.inlineRow}>
+            <Info size={16} color={theme.colors.warning} />
+            <Text style={[styles.reason, { color: theme.colors.warning }]}>
+              {event.reason}
+            </Text>
+          </View>
         )}
       </View>
     </View>
@@ -102,11 +96,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginRight: 16,
   },
-  icon: {
-    fontSize: 18,
-  },
   content: {
     flex: 1,
+  },
+  inlineRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
   },
   header: {
     flexDirection: 'row',

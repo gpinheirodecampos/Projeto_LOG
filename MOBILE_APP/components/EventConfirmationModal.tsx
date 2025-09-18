@@ -11,12 +11,13 @@ import {
 import { Clock, MapPin, X } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 import { useTheme } from '@/contexts/ThemeContext';
+import { EventIcons, EventColors } from '@/components/IconMap';
 
 interface EventConfirmationModalProps {
   visible: boolean;
   eventType: string;
   eventLabel: string;
-  eventIcon: string;
+  eventIcon: string; // deprecated: kept for backwards compatibility, no longer rendered
   location?: {
     latitude: number;
     longitude: number;
@@ -71,10 +72,14 @@ const EventConfirmationModal: React.FC<EventConfirmationModalProps> = ({
   };
 
   const getEventColor = () => {
-    if (eventType.includes('start') || eventType === 'journey_start') return '#4CAF50';
-    if (eventType.includes('end') || eventType === 'journey_end') return '#F44336';
-    return '#1976D2';
+    const key = eventType as keyof typeof EventColors;
+    return EventColors[key] ?? theme.colors.primary;
   };
+
+  const Icon = ((): React.ComponentType<any> => {
+    const key = eventType as keyof typeof EventIcons;
+    return EventIcons[key] ?? EventIcons.journey_start;
+  })();
 
   return (
     <Modal
@@ -93,7 +98,7 @@ const EventConfirmationModal: React.FC<EventConfirmationModalProps> = ({
           </TouchableOpacity>
 
           <View style={[styles.iconContainer, { backgroundColor: getEventColor() }]}>
-            <Text style={styles.modalIcon}>{eventIcon}</Text>
+            <Icon size={36} color="#FFFFFF" />
           </View>
 
           <Text style={[styles.modalTitle, { color: theme.colors.text }]}>

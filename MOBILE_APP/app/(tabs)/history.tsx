@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
-import { Calendar, Clock } from 'lucide-react-native';
+import { Calendar, Clock, FileText } from 'lucide-react-native';
 import TimelineItem from '@/components/TimelineItem';
 import { useDriverState } from '@/hooks/useDriverState';
 import { useTheme } from '@/contexts/ThemeContext';
@@ -72,7 +72,7 @@ export default function HistoryScreen() {
         <View style={[styles.summaryDivider, { backgroundColor: theme.colors.border }]} />
         
         <View style={styles.summaryItem}>
-          <Clock size={20} color="#9C27B0" />
+          <Clock size={20} color={theme.colors.primary} />
           <Text style={[styles.summaryLabel, { color: theme.colors.textSecondary }]}>
             Descanso
           </Text>
@@ -93,7 +93,7 @@ export default function HistoryScreen() {
           ))
         ) : (
           <View style={styles.emptyState}>
-            <Text style={styles.emptyIcon}>📝</Text>
+            <FileText size={48} color={theme.colors.textSecondary} />
             <Text style={[styles.emptyTitle, { color: theme.colors.text }]}>
               Nenhum evento hoje
             </Text>
@@ -172,10 +172,7 @@ const styles = StyleSheet.create({
     paddingVertical: 60,
     paddingHorizontal: 40,
   },
-  emptyIcon: {
-    fontSize: 48,
-    marginBottom: 16,
-  },
+  // Removed emoji-based emptyIcon style; using Lucide icon instead
   emptyTitle: {
     fontSize: 20,
     fontWeight: '600',
